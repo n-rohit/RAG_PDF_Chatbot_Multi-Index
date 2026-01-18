@@ -1,6 +1,6 @@
 # RAG Q&A Chatbot - Vector, Summary & Tree Indices
 
-A production-ready **Retrieval Augmented Generation (RAG)** chatbot that loads PDF documents and answers questions using three different indexing strategies. Built with LlamaIndex, Ollama, ChromaDB, and Gradio.
+A **Retrieval Augmented Generation (RAG)** chatbot that loads PDF documents and answers questions using three different indexing strategies. Built with LlamaIndex, Ollama, ChromaDB, and Gradio.
 
 ---
 
