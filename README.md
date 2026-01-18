@@ -440,13 +440,13 @@ askQuestion('What are company values?', 'Vector');
 
 ### 1. Gradio UI Output
 
-
+<img width="1470" height="956" alt="GradioUI" src="https://github.com/user-attachments/assets/dc803fd5-0770-4a34-915c-a21c9dcea3df" />
 
 ---
 
 ### 2. Terminal Output
 
-
+<img width="1107" height="578" alt="TerminalOutput" src="https://github.com/user-attachments/assets/7c1254b8-138d-4274-94a3-1875570f94c9" />
 
 ---
 
