@@ -1,34 +1,29 @@
 # RAG Q&A Chatbot - Vector, Summary & Tree Indices
 
-A **Retrieval Augmented Generation (RAG)** chatbot that loads PDF documents and answers questions using three different indexing strategies. Built with LlamaIndex, Ollama, ChromaDB, and Gradio.
+A production-ready **Retrieval Augmented Generation (RAG)** chatbot that loads PDF documents and answers questions using three different indexing strategies. Built with LlamaIndex, Ollama, ChromaDB, and Gradio.
 
 ---
 
-## 📋 Table of Contents
+## 🎯 What Is This Chatbot?
 
-1. [Overview](#overview)
-2. [Three Index Types Explained](#three-index-types-explained)
-3. [When to Use Each Index](#when-to-use-each-index)
-4. [Features](#features)
-5. [Installation](#installation)
-6. [Configuration](#configuration)
-7. [Usage](#usage)
-8. [Architecture](#architecture)
-9. [Gradio UI vs Web Frameworks](#gradio-ui-vs-web-frameworks)
-10. [Screenshots](#screenshots)
-11. [Example Queries](#example-queries)
-12. [Troubleshooting](#troubleshooting)
+This RAG (Retrieval Augmented Generation) chatbot lets you **upload PDF documents** and **ask questions** about their content using AI. Instead of reading hundreds of pages manually, you can:
 
----
+- Upload any PDF files (research papers, policies, manuals, reports)
+- Ask natural language questions
+- Get accurate answers backed by the actual document content
+- Choose between three different search strategies for optimal results
 
-## 🎯 Overview
+**How it works:**
+1. **Upload PDFs** through the web interface
+2. **System processes** them using AI embeddings and indexing
+3. **Ask questions** in plain English
+4. **Get answers** with relevant context from your documents
 
-This RAG chatbot processes PDF documents and generates intelligent answers by combining:
-- **Vector Search** (Embedding-based similarity)
-- **Summary Index** (Sequential document analysis)
-- **Tree Index** (Hierarchical document structure)
-
-Each index approaches document retrieval differently, allowing you to choose the best strategy for your use case.
+**Example Use Cases:**
+- "What are the company's core values?" (from company handbook)
+- "Summarize the key findings of this research paper"
+- "What is the refund policy?" (from terms & conditions)
+- "List all safety procedures mentioned in this manual"
 
 ---
 
@@ -149,18 +144,6 @@ Answer: "Core values include integrity, respect for individuals,
 
 ---
 
-## ✨ Features
-
-- **3 Concurrent Indexing Strategies** - Compare approaches side-by-side
-- **Local LLM** - Mistral-7B via Ollama (no API keys needed)
-- **Persistent Storage** - ChromaDB for vector embeddings
-- **PDF Support** - Load and process PDF documents automatically
-- **Clean UI** - Gradio web interface for easy interaction
-- **Real-time Responses** - Instant query processing
-- **Production Ready** - Comments throughout for understanding
-
----
-
 ## 📦 Installation
 
 ### Prerequisites
@@ -194,10 +177,10 @@ pip install -r requirements.txt
 **Option B: Manual installation**
 ```bash
 # Core RAG Framework
-pip install llama-index==0.9.48 chromadb==0.4.24
+pip install llama-index-core llama-index-llms-ollama llama-index-embeddings-huggingface llama-index-vector-stores-chroma
 
-# LLM & Embeddings
-pip install ollama sentence-transformers
+# Database & Embeddings
+pip install chromadb sentence-transformers
 
 # PDF Processing
 pip install pypdf
@@ -225,7 +208,7 @@ curl http://localhost:11434/api/tags
 
 ## ⚙️ Configuration
 
-Edit configuration variables in `rag_chatbot_vec_tree_summ.py`:
+Edit configuration variables at the top of the Python files:
 
 ```python
 # ============================================================================
@@ -235,7 +218,7 @@ Edit configuration variables in `rag_chatbot_vec_tree_summ.py`:
 MODEL_NAME = "mistral:latest"  # Ollama model to use
 OLLAMA_BASE_URL = "http://localhost:11434"  # Ollama server URL
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"  # Embedding model
-DOCS_FOLDER = "docs"  # Folder containing PDF files
+DOCS_FOLDER = "docs"  # Folder containing PDF files (rag_chatbot_fixed_docs.py only)
 CHROMA_DB_PATH = "./chroma_db"  # Vector database location
 TEMPERATURE = 0.7  # LLM creativity (0=factual, 1=creative)
 TOP_K = 3  # Number of chunks to retrieve for Vector index
@@ -245,34 +228,121 @@ TOP_K = 3  # Number of chunks to retrieve for Vector index
 
 ## 🚀 Usage
 
-### 1. Add PDF Documents
+### Two Implementation Options
 
-Create a `docs/` folder and add your PDF files:
+This project includes **two versions** of the chatbot, each suited for different workflows:
+
+---
+
+### **Option 1: `rag_chatbot.py` - Upload PDFs at Runtime**
+
+**Use this when:** You want to upload different PDFs each time without restarting the app.
+
+**Features:**
+- ✅ Upload PDFs through the web interface
+- ✅ Process multiple PDFs on-demand
+- ✅ No need to restart the app for new documents
+- ✅ Perfect for exploring different document sets
+- ✅ Fresh ChromaDB collection created per upload session
+
+**How to run:**
 
 ```bash
+# Step 1: Make sure Ollama is running
+ollama serve  # In a separate terminal
+
+# Step 2: Start the chatbot
+python3 rag_chatbot.py
+
+# Step 3: Open browser
+# Navigate to: http://127.0.0.1:7860
+
+# Step 4: Use the interface
+# - Click "Upload PDF files" button
+# - Select one or more PDF files
+# - Click "Process PDFs" button
+# - Wait for indexing to complete
+# - Enter your question
+# - Select index type (Vector/Summary/Tree)
+# - Click "Ask Question"
+```
+
+**Workflow:**
+```
+Launch App → Upload PDFs → Click "Process PDFs" → Wait → Ask Questions
+```
+
+**Best for:**
+- Trying different document sets
+- Quick experiments
+- Demo/presentation scenarios
+- One-time document analysis
+
+---
+
+### **Option 2: `rag_chatbot_fixed_docs.py` - Pre-load PDFs from Folder**
+
+**Use this when:** You have a fixed set of PDFs that you want always available.
+
+**Features:**
+- ✅ Pre-indexes PDFs from `docs/` folder at startup
+- ✅ Faster queries (no upload wait time)
+- ✅ Persistent ChromaDB storage
+- ✅ Perfect for production deployments
+- ✅ Documents always ready to query
+
+**How to run:**
+
+```bash
+# Step 1: Create docs folder and add PDFs
 mkdir docs
-# Copy your PDF files to this folder
 cp your-document.pdf docs/
+# Add all your PDF files to this folder
+
+# Step 2: Make sure Ollama is running
+ollama serve  # In a separate terminal
+
+# Step 3: Start the chatbot
+python3 rag_chatbot_fixed_docs.py
+
+# Step 4: Wait for indexing
+# The app will automatically:
+# - Load all PDFs from docs/
+# - Create Vector, Summary, and Tree indices
+# - Display "✅ ALL 3 INDICES CREATED SUCCESSFULLY!"
+
+# Step 5: Open browser
+# Navigate to: http://127.0.0.1:7860
+
+# Step 6: Ask questions immediately
+# - Enter your question
+# - Select index type (Vector/Summary/Tree)
+# - Click "Ask Question"
 ```
 
-### 2. Start the Application
-
-```bash
-# Make sure Ollama is running in another terminal
-python3 rag_chatbot_vec_tree_summ.py
+**Workflow:**
+```
+Add PDFs to docs/ → Launch App → Automatic Indexing → Ready to Query
 ```
 
-### 3. Open Gradio Interface
+**Best for:**
+- Production deployments
+- Fixed document sets (company policies, manuals)
+- Faster query response time
+- Persistent knowledge base
 
-- Open browser to: `http://127.0.0.1:7860`
-- You should see the RAG Q&A Chatbot UI
+---
 
-### 4. Ask Questions
+### **Which Should I Use?**
 
-1. Enter your question in the text box
-2. Select index type (Vector, Summary, or Tree)
-3. Click "Ask Question" or press Enter
-4. View answer and query information
+| Scenario | Use This File | Why |
+|----------|--------------|-----|
+| Testing different documents | `rag_chatbot.py` | Upload flexibility |
+| Quick demos/presentations | `rag_chatbot.py` | No setup needed |
+| Fixed company documents | `rag_chatbot_fixed_docs.py` | Pre-indexed, faster |
+| Production deployment | `rag_chatbot_fixed_docs.py` | Persistent storage |
+| Exploring RAG concepts | `rag_chatbot.py` | Interactive learning |
+| Building knowledge base | `rag_chatbot_fixed_docs.py` | Startup automation |
 
 ---
 
@@ -313,143 +383,6 @@ Question → Hierarchical Traversal → Relevant leaf nodes → Tree Summarizati
 
 ---
 
-## 🎨 Gradio UI vs Web Frameworks
-
-### Why Gradio for Prototyping?
-
-**Gradio Benefits:**
-- ✅ **Fastest prototyping** - Build UI in minutes
-- ✅ **No frontend knowledge needed** - Pure Python
-- ✅ **Built-in components** - Buttons, inputs, outputs
-- ✅ **Automatic documentation** - API auto-generated
-- ✅ **Easy sharing** - Public links available
-
-### Scaling to Production Web Apps
-
-The chatbot logic can power **Flask, React, Angular, or Mobile Apps** by using the same backend with APIs:
-
-**Architecture Pattern:**
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                  Frontend Layer                          │
-│  (React/Angular/Mobile/Web)                             │
-└──────────────────┬──────────────────────────────────────┘
-                   │ HTTP/REST API
-┌──────────────────▼──────────────────────────────────────┐
-│                  API Layer (Flask/FastAPI)              │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │ @app.route('/api/query', methods=['POST'])        │  │
-│  │ def query_chatbot():                              │  │
-│  │     question = request.json['question']           │  │
-│  │     index_type = request.json['index_type']       │  │
-│  │     answer = chatbot.query(question, index_type)  │  │
-│  │     return {'answer': answer}                     │  │
-│  └───────────────────────────────────────────────────┘  │
-└──────────────────┬──────────────────────────────────────┘
-                   │ Python Method Calls
-┌──────────────────▼──────────────────────────────────────┐
-│              RAGChatbot Backend Logic                    │
-│  (Same code from this project)                          │
-│  - load_documents_from_folder()                         │
-│  - create_vector_store_index()                          │
-│  - create_summary_index()                               │
-│  - create_tree_index()                                  │
-│  - query()                                              │
-└──────────────────┬──────────────────────────────────────┘
-                   │
-┌──────────────────▼──────────────────────────────────────┐
-│             Data Layer                                   │
-│  - ChromaDB (vector storage)                            │
-│  - Ollama LLM                                           │
-│  - PDF Documents                                        │
-└──────────────────────────────────────────────────────────┘
-```
-
-### Example: Converting to Flask API
-
-**Original Gradio Code:**
-```python
-# rag_chatbot_vec_tree_summ.py
-chatbot = RAGChatbot(llm, embed_model, vector_store, service_context)
-answer = chatbot.query("What are values?", "Vector")
-```
-
-**Flask Wrapper (new file: `app.py`):**
-```python
-from flask import Flask, request, jsonify
-from rag_chatbot_vec_tree_summ import RAGChatbot, initialize_settings, setup_chromadb
-
-app = Flask(__name__)
-
-# Initialize once at startup
-llm, embed_model, service_context = initialize_settings()
-vector_store = setup_chromadb()
-chatbot = RAGChatbot(llm, embed_model, vector_store, service_context)
-chatbot.load_and_index_documents()
-
-@app.route('/api/query', methods=['POST'])
-def query_endpoint():
-    """API endpoint for RAG queries"""
-    data = request.json
-    question = data.get('question')
-    index_type = data.get('index_type', 'Vector')
-    
-    answer = chatbot.query(question, index_type)
-    
-    return jsonify({
-        'question': question,
-        'answer': answer,
-        'index_type': index_type
-    })
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
-```
-
-**React Frontend (consume API):**
-```javascript
-async function askQuestion(question, indexType) {
-    const response = await fetch('http://localhost:5000/api/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, index_type: indexType })
-    });
-    
-    const data = await response.json();
-    console.log('Answer:', data.answer);
-    return data;
-}
-
-// Usage
-askQuestion('What are company values?', 'Vector');
-```
-
-**This same chatbot backend powers:**
-- ✅ Gradio UI (current)
-- ✅ Flask web app
-- ✅ FastAPI service
-- ✅ React/Angular frontend
-- ✅ Mobile app (via API)
-- ✅ Slack bot
-- ✅ Discord bot
-
----
-
-## 📊 Screenshots
-
-### 1. Gradio UI Output
-
-<img width="1470" height="956" alt="GradioUI" src="https://github.com/user-attachments/assets/dc803fd5-0770-4a34-915c-a21c9dcea3df" />
-
----
-
-### 2. Terminal Output
-
-<img width="1107" height="578" alt="TerminalOutput" src="https://github.com/user-attachments/assets/7c1254b8-138d-4274-94a3-1875570f94c9" />
-
----
-
 ## 🔧 Troubleshooting
 
 ### Issue: "Cannot connect to Ollama"
@@ -469,7 +402,7 @@ curl http://localhost:11434/api/tags
 
 ---
 
-### Issue: "No PDF files found"
+### Issue: "No PDF files found" (rag_chatbot_fixed_docs.py only)
 
 ```
 ⚠️  No PDF files found in docs/ folder
@@ -494,13 +427,35 @@ ls docs/  # Verify files are there
 
 ---
 
+### Issue: Timeout errors during processing
+
+**Solution:**
+The code already includes increased timeouts:
+```python
+# In both files, Ollama request_timeout is set to 3600.0 seconds (1 hour)
+llm = Ollama(
+    model=MODEL_NAME,
+    base_url=OLLAMA_BASE_URL,
+    request_timeout=3600.0,  # No timeouts for long documents
+    temperature=TEMPERATURE,
+)
+```
+
+If you still experience timeouts:
+- Check Ollama server logs: `ollama logs`
+- Reduce document size or number of documents
+- Use Vector index for faster processing
+
+---
+
 ## 📝 Project Structure
 
 ```
 rag-chatbot/
-├── rag_chatbot_vec_tree_summ.py    # Main application
+├── rag_chatbot.py                    # Upload PDFs at runtime
+├── rag_chatbot_fixed_docs.py         # Pre-load PDFs from folder
 ├── requirements.txt                  # Python dependencies
-├── docs/                             # PDF documents folder
+├── docs/                             # PDF documents folder (for fixed_docs.py)
 │   ├── document1.pdf
 │   └── document2.pdf
 ├── chroma_db/                        # Vector database (auto-created)
@@ -513,15 +468,30 @@ rag-chatbot/
 ## 📚 Dependencies Explained
 
 | Package | Version | Purpose |
-|---------|---------|---------|
-| `llama-index` | 0.9.48 | RAG framework & indices |
-| `chromadb` | 0.4.24 | Vector database |
+|---------|---------|------------|
+| `llama-index-core` | latest | RAG framework & indices |
+| `chromadb` | latest | Vector database |
 | `ollama` | latest | Local LLM inference |
-| `sentence-transformers` | 2.2.0+ | Text embeddings |
-| `pypdf` | 4.0.0+ | PDF parsing |
-| `gradio` | 4.0.0+ | Web UI framework |
-| `torch` | 2.0.0+ | Deep learning backend |
-| `transformers` | 4.30.0+ | Pre-trained models |
+| `sentence-transformers` | latest | Text embeddings |
+| `pypdf` | latest | PDF parsing |
+| `gradio` | latest | Web UI framework |
+| `torch` | latest | Deep learning backend |
+| `transformers` | latest | Pre-trained models |
 
 ---
+
+## ✨ Features
+
+- **3 Concurrent Indexing Strategies** - Compare approaches side-by-side
+- **Two Usage Modes** - Upload-on-demand OR pre-indexed documents
+- **Local LLM** - Mistral-7B via Ollama (no API keys needed)
+- **Persistent Storage** - ChromaDB for vector embeddings
+- **PDF Support** - Load and process PDF documents automatically
+- **Clean UI** - Gradio web interface for easy interaction
+- **Real-time Responses** - Instant query processing
+- **Production Ready** - Comprehensive comments throughout
+- **No Timeouts** - 1-hour request timeout for long documents
+
+---
+
 **Happy RAG-ing! 🚀**
